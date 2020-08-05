@@ -1,0 +1,72 @@
+body {
+    font-family: Merriweather;
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+h1, h2, h3 {
+    font-family: Raleway;
+}
+.mainTitle {
+    color: #00704A;
+    font-size: 36px;
+    margin-bottom: 0px;
+}
+
+.subTitle {
+    color: grey;
+    padding-bottom: 24px;
+    border-bottom: 2px solid grey;
+    margin-bottom: 32px;
+}
+
+.mainTitle, .subTitle {
+    text-align: center;
+}
+
+.sectionHeader {
+    font-size: 24px;
+    font-weight: normal;
+    border-left: 8px solid grey;
+    padding-left: 16px;
+    width: fit-content;
+}
+.addItemsBox {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    padding-left: 16px;
+}
+
+
+.addItemsBox .addItemsOfType select {
+    width: 100%;
+}
+.addItemsBox .addItemsOfType select, .addItemsBox .addItemsOfType button {
+    height: 24px;
+}
+
+.selectedItemsTable {
+    border-collapse: collapse;
+    margin-left: 16px;
+    margin-bottom: 48px;
+}
+.selectedItemsTable td,th{
+    padding: 4px 8px;
+}
+.selectedItemsTable thead tr{
+    border-bottom: 2px solid rgba(0,0,0,.8);
+    font-weight: bold;
+}
+.selectedItemsTable tbody td {
+    border-bottom: 1px solid rgba(0,0,0,.4);
+    padding-left: 16px !important;
+}
+
+.tsi-tooltipSubtitle {
+    font-size: 16px !important;
+}
+
+#caloriesChart {
+    width: 100%;
+    height: 400px;
+}

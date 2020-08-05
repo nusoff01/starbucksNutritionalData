@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link href="https://fonts.googleapis.com/css?family=Merriweather|Raleway" rel="stylesheet">
+    <script src="https://unpkg.com/tsiclient@1.3.27/tsiclient.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/tsiclient@1.3.27/tsiclient.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <title>Starbucks Order Calorie Tracker</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div>
+        <h1 class='mainTitle'>Starbucks order nutritional tracker</h1>
+        <h3 class='subTitle'>Add drinks and food from your meal to see their macronutrients and calorie counts</h3>
+        <h2 class='sectionHeader'>Add items</h2>
+        <table class='addItemsBox'>
+            <tr class='addItemsOfType addItemsDrinks'>
+                <td>Drinks: </td> 
+                <td><select id='drinks'></select></td>
+                <td><button onclick="selectItem('drinks')">Add</button></td>
+            </tr>
+            <tr class='addItemsOfType addItemsFood'>
+                <td>Food: </td> 
+                <td><select id='food'></select></td>
+                <td><button onclick="selectItem('food')">Add</button></td>
+            </tr>
+        </table>
+        <h2 class='sectionHeader itemsSelectedTitle'>Items selected</h2>
+        <table class='selectedItemsTable' style='visibility:hidden;'>
+            <thead>
+                <tr>
+                    <td>Name</td>
+                    <td>Calories</td>
+                    <td>Fat (g)</td>
+                    <td>Carbs (g)</td>
+                    <td>Protein (g)</td>
+                </tr>    
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <h2 class='sectionHeader macronutrientTitle'>Macronutrient breakdown</h2>
+        <div id='caloriesChart'></div>
+    </div>
+    <script>
+        let selectItem;
+        window.onload = function() {
+            let selectedItems = [];
+            let tsiClient = new TsiClient();
+            let caloriesChart = new tsiClient.ux.BarChart(document.getElementById('caloriesChart'));
+
+            function populateMenu (menuType) {
+                d3.csv(`data/${menuType}.csv`).then((menuItemsData) => {
+                    //filter out items without nutritional info
+                    menuItemsData = menuItemsData.filter((d) => {
+                        return d.Calories !== '-';
+                    });
+
+                    let items = d3.select(`#${menuType}`).selectAll('option')
+                        .data(menuItemsData);
+                    items.enter()
+                        .append('option')
+                        .text(d => d.Name);
+                    items.exit().remove();
+                });
+            }
+
+            selectItem = function (menuType) {
+                let selectedItem = d3.select(`#${menuType}`).selectAll('option').filter(function () {
+                    return this.selected;
+                });
+                selectedItems.push(selectedItem.datum());
+                drawTable();
+                renderBarchart();
+            }
+
+            function drawTable () {
+                // only show the table once something was added to the selectedItems list
+                if (selectedItems.length > 0) {
+                    d3.select('.selectedItemsTable').style('visibility', 'visible');
+                }
+
+                let rows = d3.select('.selectedItemsTable')
+                    .select('tbody')
+                    .selectAll('tr')
+                    .data(selectedItems);
+                rows.enter().append('tr')
+                    .each(function (d) {
+                        let nutritionalArray = [d.Name, d.Calories, d['Fat (g)'], d['Carb. (g)'], d['Protein (g)']];
+                        let cells = d3.select(this).selectAll('td').data(nutritionalArray);
+                        cells.enter()
+                            .append('td')
+                            .text(d => d);
+                        cells.exit().remove();
+                    })
+                rows.exit().remove();
+            }
+
+            function formatDataForBarchart () {
+                let formatedItems = [];
+                selectedItems.forEach((item) => {
+                    //shaping the data to get it into TSIClient format
+                    let formatedItem = {};
+                    formatedItem[item.Name] = {};
+                    formatedItem[item.Name]['carbs'] = {'1970-1-1': {grams: Number(item['Carb. (g)'])}};
+                    formatedItem[item.Name]['protein'] = {'1970-1-1': {grams: Number(item['Protein (g)'])}};
+                    formatedItem[item.Name]['fat'] = {'1970-1-1': {grams: Number(item['Fat (g)'])}}
+                    formatedItems.push(formatedItem);
+                });
+                return formatedItems;
+            }
+
+            function renderBarchart () {
+                let data = formatDataForBarchart();
+                caloriesChart.render(data, {legend: 'hidden', theme: 'light', tooltip: true});
+            }
+
+            populateMenu('drinks');
+            populateMenu('food');
+        }
+    </script>
+  </body>
+</html>
